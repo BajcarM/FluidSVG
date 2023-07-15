@@ -1,7 +1,7 @@
 {
   "name": "@fluid-svg/functions",
   "private": false,
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Create smoothly animated SVG assets with ease",
   "author": "Michal Bajcar",
   "license": "MIT",
