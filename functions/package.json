@@ -1,0 +1,69 @@
+{
+  "name": "@fluid-svg/functions",
+  "private": false,
+  "version": "0.0.3",
+  "description": "Create smoothly animated SVG assets with ease",
+  "author": "Michal Bajcar",
+  "license": "MIT",
+  "homepage": "https://github.com/BajcarM/Fluid-SVG.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BajcarM/Fluid-SVG.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BajcarM/Fluid-SVG/issues"
+  },
+  "keywords": [
+    "svg",
+    "fluid",
+    "smooth",
+    "animate",
+    "noise",
+    "motion",
+    "animation",
+    "animated",
+    "assets",
+    "liquid",
+    "dynamic",
+    "morph",
+    "morphing",
+    "morphable",
+    "morphable",
+    "morphing",
+    "morphable",
+    "waves"
+  ],
+  "type": "module",
+  "main": "./dist/fluid-svg.umd.cjs",
+  "module": "./dist/fluid-svg.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/fluid-svg.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/fluid-svg.umd.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.1",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.0",
+    "vite-plugin-dts": "^3.2.0"
+  },
+  "dependencies": {
+    "simplex-noise": "^4.0.1"
+  }
+}
