@@ -5,10 +5,10 @@
   "description": "Create smoothly animated SVG assets with ease - React",
   "author": "Michal Bajcar",
   "license": "MIT",
-  "homepage": "https://github.com/BajcarM/FluidSVG.git",
+  "homepage": "https://github.com/BajcarM/FluidSVG/tree/react",
   "repository": {
     "type": "git",
-    "url": "https://github.com/BajcarM/FluidSVG.git"
+    "url": "https://github.com/BajcarM/FluidSVG/tree/react"
   },
   "bugs": {
     "url": "https://github.com/BajcarM/FluidSVG/issues"
