@@ -1,7 +1,7 @@
 {
   "name": "@fluid-svg/react",
   "private": false,
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Create smoothly animated SVG assets with ease - React",
   "author": "Michal Bajcar",
   "license": "MIT",
