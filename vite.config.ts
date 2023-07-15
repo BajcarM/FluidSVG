@@ -1,15 +1,30 @@
-import { resolve } from 'path'
+import react from '@vitejs/plugin-react'
+import path from 'node:path'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
 
-// https://vitejs.dev/guide/build.html#library-mode
 export default defineConfig({
+  plugins: [
+    react(),
+    dts({
+      insertTypesEntry: true,
+    }),
+  ],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'fluid-svg',
-      fileName: 'fluid-svg',
+      entry: path.resolve(__dirname, 'src/index.ts'),
+      name: 'fluid-svg-react',
+      formats: ['es', 'umd'],
+      fileName: `fluid-svg-react`,
+    },
+    rollupOptions: {
+      external: ['react', 'react-dom'],
+      output: {
+        globals: {
+          react: 'React',
+          'react-dom': 'ReactDOM',
+        },
+      },
     },
   },
-  plugins: [dts()],
 })

@@ -1,8 +1,8 @@
 {
-  "name": "@fluid-svg/functions",
+  "name": "@fluid-svg/react",
   "private": false,
-  "version": "0.0.5",
-  "description": "Create smoothly animated SVG assets with ease",
+  "version": "0.0.4",
+  "description": "Create smoothly animated SVG assets with ease - React",
   "author": "Michal Bajcar",
   "license": "MIT",
   "homepage": "https://github.com/BajcarM/FluidSVG.git",
@@ -31,39 +31,53 @@
     "morphable",
     "morphing",
     "morphable",
-    "waves"
+    "waves",
+    "react"
   ],
-  "type": "module",
-  "main": "./dist/fluid-svg.umd.cjs",
-  "module": "./dist/fluid-svg.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "simplex-noise": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.14",
+    "@types/react-dom": "^18.2.6",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "@vitejs/plugin-react": "^4.0.1",
+    "eslint": "^8.44.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.4.0",
+    "vite-plugin-dts": "^3.2.0"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/fluid-svg-react.umd.js",
+  "module": "./dist/fluid-svg-react.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/fluid-svg.js"
+        "default": "./dist/fluid-svg-react.mjs"
       },
       "require": {
         "types": "./dist/index.d.ts",
-        "default": "./dist/fluid-svg.umd.cjs"
+        "default": "./dist/fluid-svg-react.umd.js"
       }
     }
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  },
-  "devDependencies": {
-    "@types/node": "^20.4.1",
-    "typescript": "^5.0.2",
-    "vite": "^4.4.0",
-    "vite-plugin-dts": "^3.2.0"
-  },
-  "dependencies": {
-    "simplex-noise": "^4.0.1"
   }
 }

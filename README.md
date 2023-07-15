@@ -1,6 +1,8 @@
-# Fluid SVG
+# Fluid SVG - React
 
 Create fluidly moving or animating SVG elements for modern websites with ease.
+
+**This package provides components for React.**
 
 ## Introduction
 
@@ -19,27 +21,24 @@ Fluid-Motion is an npm package that provides a set of functions and components t
 To install Fluid-Motion, simply run the following command:
 
 ```bash
-npm i @fluid-svg/functions
+npm i @fluid-svg/react
 ```
 
 ## Usage
 
 Here's a basic example of how you can use the Fluid-Motion package in your project:
 
-```html
-<!-- Add simple HTML markup -->
-<svg id="MySvg" height="500" width="500" xmlns="http://www.w3.org/2000/svg">
-  <path stroke="blue" strokeWidth="0.005" />
-  <path stroke="red" strokeWidth="0.005" />
-  <path stroke="green" strokeWidth="0.005" />
-</svg>
-```
+```jsx
+import { FluidWaves } from '@fluid-svg/react'
 
-```javascript
-import { animateWaves } from '@fluid-svg/functions'
-
-// Animate an SVG element
-animateWaves('#MySvg')
+// Use the FluidWaves component to wrap paths you want to animate
+const MyComponent = () => (
+  <FluidWaves width="500" height="500">
+    <path stroke="blue" strokeWidth="0.005" key="0" />
+    <path stroke="red" strokeWidth="0.005" key="1" />
+    <path stroke="green" strokeWidth="0.005" key="2" />
+  </FluidWaves>
+)
 ```
 
 For more detailed usage instructions and examples, refer to the documentation provided in the docs directory.
