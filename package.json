@@ -5,13 +5,13 @@
   "description": "Create smoothly animated SVG assets with ease",
   "author": "Michal Bajcar",
   "license": "MIT",
-  "homepage": "https://github.com/BajcarM/Fluid-SVG.git",
+  "homepage": "https://github.com/BajcarM/FluidSVG.git",
   "repository": {
     "type": "git",
-    "url": "https://github.com/BajcarM/Fluid-SVG.git"
+    "url": "https://github.com/BajcarM/FluidSVG.git"
   },
   "bugs": {
-    "url": "https://github.com/BajcarM/Fluid-SVG/issues"
+    "url": "https://github.com/BajcarM/FluidSVG/issues"
   },
   "keywords": [
     "svg",
