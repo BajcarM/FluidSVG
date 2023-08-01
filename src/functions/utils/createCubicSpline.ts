@@ -43,3 +43,34 @@ export function createCubicSpline(
 
   return d
 }
+
+export function createOpenCubicSpline(points: Vector2D[], tension = 2): string {
+  // Normalize the tension value for better user experience
+  const normalizedTension = tension / 10
+
+  // Extra points were added so we trim the spline
+  const start = points[1]
+
+  // Calculate the control points for each point and create the path
+  const d = points.reduce((acc, point, i, points) => {
+    if (i < 2 || i > points.length - 2) {
+      return acc
+    }
+
+    const [x0, y0] = points[i - 2]
+    const [x1, y1] = points[i - 1]
+    const [x2, y2] = point
+    const [x3, y3] = points[i + 1]
+
+    const cp1x = x1 + (x2 - x0) * normalizedTension
+    const cp1y = y1 + (y2 - y0) * normalizedTension
+    const cp2x = x2 - (x3 - x1) * normalizedTension
+    const cp2y = y2 - (y3 - y1) * normalizedTension
+
+    const path = `C ${cp1x},${cp1y} ${cp2x},${cp2y} ${x2},${y2}`
+
+    return acc + path
+  }, `M ${start[0]},${start[1]} `)
+
+  return d
+}

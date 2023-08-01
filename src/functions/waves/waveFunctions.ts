@@ -1,6 +1,6 @@
 import { NoiseFunction3D } from 'simplex-noise'
 import { Vector2D, WaveShape } from '../types'
-import { createCubicSpline } from '../utils/createCubicSpline'
+import { createOpenCubicSpline } from '../utils/createCubicSpline'
 
 export function generatePointsOnLine(
   start: Vector2D,
@@ -10,63 +10,67 @@ export function generatePointsOnLine(
 ): Vector2D[] {
   const pointsCoords: Vector2D[] = []
   const xIncrement = (end[0] - start[0]) / numPoints
-  const yIncrement = (end[1] - start[1]) / numPoints
 
   if (additionalPointsForSpline) {
-    pointsCoords.push([start[0] - xIncrement, start[1] - yIncrement])
+    pointsCoords.push([start[0] - xIncrement * 2, start[1]])
+    pointsCoords.push([start[0] - xIncrement, start[1]])
   }
 
   for (let i = 0; i < numPoints; i++) {
     const x = start[0] + xIncrement * i
-    const y = start[1] + yIncrement * i
+    const y = start[1]
     pointsCoords.push([x, y])
   }
 
   if (additionalPointsForSpline) {
     pointsCoords.push([end[0], end[1]])
-    pointsCoords.push([end[0] + xIncrement, end[1] + yIncrement])
-    pointsCoords.push([end[0] + xIncrement * 2, end[1] + yIncrement * 2])
+    pointsCoords.push([end[0] + xIncrement, end[1]])
+    pointsCoords.push([end[0] + xIncrement * 2, end[1]])
   }
 
   return pointsCoords
 }
 
 export function createStaticWaveShape(
-  position: 'top' | 'right' | 'bottom' | 'left',
   waveHeight: number,
   numPoints: number,
-  movementRadius: number,
-  noiseScaling: number,
-  noiseOffset: number,
+  amplitude: number,
+  smoothness: number,
+  differenceBetweenWaves: number,
   noiseTimeline: number,
   noise3DFunction: NoiseFunction3D,
 ): WaveShape {
-  const { start, end, corner1, corner2 } = getCorners(position, waveHeight)
+  // Format options for better user experience
+  const amplitudeFormatted = amplitude / 10
+  const differenceBetweenWavesFormatted = differenceBetweenWaves / 10
+
+  const { start, end, corner1, corner2 } = getCorners(waveHeight)
 
   const pointsOrigins = generatePointsOnLine(start, end, numPoints)
-  const pointsNoiseCoords = getNoiseCoords(position, pointsOrigins, noiseOffset)
+  const pointsNoiseCoords = getNoiseCoords(
+    pointsOrigins,
+    differenceBetweenWavesFormatted,
+  )
 
   const pointsPositions = pointsOrigins.map((point, index) => {
     // Waves can have different offset in svg from noise plane
     const noiseCoords = pointsNoiseCoords[index]
 
     const noiseValue = noise3DFunction(
-      noiseCoords[0] * noiseScaling,
-      noiseCoords[1] * noiseScaling,
+      noiseCoords[0] * smoothness,
+      noiseCoords[1] * smoothness,
       noiseTimeline,
     )
 
-    const pointPosition = getPointPosition(
-      position,
-      point,
-      movementRadius,
-      noiseValue,
-    )
+    const pointPosition: Vector2D = [
+      point[0],
+      point[1] + (noiseValue * amplitudeFormatted) / 2,
+    ]
 
     return pointPosition
   })
 
-  const wavePath = createCubicSpline(pointsPositions, 2, false)
+  const wavePath = createOpenCubicSpline(pointsPositions, 2)
 
   // Add the corners to the path
   const path = `${wavePath}
@@ -84,41 +88,13 @@ export function createStaticWaveShape(
 }
 
 /**
- * Returns the coordinates of the other 2 corners outside svg so path can have fill
+ * Returns the coordinates of the other 2 corners outside svg so stroke is not visible
  */
-export function getCorners(
-  position: 'top' | 'right' | 'bottom' | 'left',
-  waveHeight: number,
-) {
-  let start: Vector2D, end: Vector2D, corner1: Vector2D, corner2: Vector2D
-
-  switch (position) {
-    case 'top':
-      start = [-0.2, waveHeight]
-      end = [1.2, waveHeight]
-      corner1 = [1.2, -0.2]
-      corner2 = [-0.2, -0.2]
-      break
-    case 'right':
-      start = [1 - waveHeight, -0.2]
-      end = [1 - waveHeight, 1.2]
-      corner1 = [1.2, 1.2]
-      corner2 = [1.2, -0.2]
-
-      break
-    case 'bottom':
-      start = [-0.2, 1 - waveHeight]
-      end = [1.2, 1 - waveHeight]
-      corner1 = [1.2, 1.2]
-      corner2 = [-0.2, 1.2]
-      break
-    case 'left':
-      start = [waveHeight, -0.2]
-      end = [waveHeight, 1.2]
-      corner1 = [-0.2, 1.2]
-      corner2 = [-0.2, -0.2]
-      break
-  }
+export function getCorners(waveHeight: number) {
+  const start: Vector2D = [0, 1 - waveHeight]
+  const end: Vector2D = [1, 1 - waveHeight]
+  const corner1: Vector2D = [1.1, 1.1]
+  const corner2: Vector2D = [-0.1, 1.1]
 
   return { start, end, corner1, corner2 }
 }
@@ -126,55 +102,51 @@ export function getCorners(
 /**
  * Returns the noise coordinates for each point
  */
-export function getNoiseCoords(
-  position: 'top' | 'right' | 'bottom' | 'left',
-  pointsOrigin: Vector2D[],
-  noiseOffset: number,
-) {
-  const noiseCoords = pointsOrigin.map((point) => {
-    switch (position) {
-      case 'top':
-        return [point[0], point[1] * noiseOffset]
-
-      case 'right':
-        return [point[0] * noiseOffset, point[1]]
-
-      case 'bottom':
-        return [point[0], point[1] * noiseOffset]
-
-      case 'left':
-        return [point[0] * noiseOffset, point[1]]
-    }
-  })
+export function getNoiseCoords(pointsOrigin: Vector2D[], noiseOffset: number) {
+  const noiseCoords = pointsOrigin.map((point) => [
+    point[0],
+    point[1] * noiseOffset,
+  ])
 
   return noiseCoords as Vector2D[]
+}
+
+export function getHeights(
+  heightFrom: number,
+  heightTo: number,
+  numWaves: number,
+) {
+  const heightFromFormatted = heightFrom / 10
+  const heightToFormatted = heightTo / 10
+
+  const heightDifference = heightToFormatted - heightFromFormatted
+
+  const heights = Array.from({ length: numWaves }, (_, index) => {
+    if (numWaves === 1) {
+      return heightFromFormatted
+    }
+
+    const height =
+      heightToFormatted - heightDifference * (index / (numWaves - 1))
+
+    return height
+  })
+
+  return heights
 }
 
 /**
  * Returns the new position of a point based on the noise value
  */
 export function getPointPosition(
-  position: 'top' | 'right' | 'bottom' | 'left',
   point: Vector2D,
-  movementRadius: number,
+  amplitude: number,
   noiseValue: number,
 ) {
-  let pointPosition: Vector2D
-
-  switch (position) {
-    case 'top':
-      pointPosition = [point[0], point[1] + (noiseValue * movementRadius) / 2]
-      break
-    case 'right':
-      pointPosition = [point[0] + (noiseValue * movementRadius) / 2, point[1]]
-      break
-    case 'bottom':
-      pointPosition = [point[0], point[1] + (noiseValue * movementRadius) / 2]
-      break
-    case 'left':
-      pointPosition = [point[0] + (noiseValue * movementRadius) / 2, point[1]]
-      break
-  }
+  const pointPosition: Vector2D = [
+    point[0],
+    point[1] + (noiseValue * amplitude) / 2,
+  ]
 
   return pointPosition
 }
@@ -183,13 +155,14 @@ export function getPointPosition(
  * Updates the wave shape with new noise values
  */
 export function updateWaveShape(
-  position: 'top' | 'right' | 'bottom' | 'left',
   waveShape: WaveShape,
-  movementRadius: number,
-  noiseScaling: number,
+  amplitude: number,
+  smoothness: number,
   noiseTimeline: number,
   noise3DFunction: NoiseFunction3D,
 ): WaveShape {
+  const amplitudeFormatted = amplitude / 10
+
   const {
     pointsOrigins,
     pointsNoiseCoords,
@@ -200,22 +173,21 @@ export function updateWaveShape(
     const noiseCoords = pointsNoiseCoords[index]
 
     const noiseValue = noise3DFunction(
-      noiseCoords[0] * noiseScaling,
-      noiseCoords[1] * noiseScaling,
+      noiseCoords[0] * smoothness,
+      noiseCoords[1] * smoothness,
       noiseTimeline,
     )
 
     const pointPosition = getPointPosition(
-      position,
       point,
-      movementRadius,
+      amplitudeFormatted,
       noiseValue,
     )
 
     return pointPosition
   })
 
-  const wavePath = createCubicSpline(pointsPositions, 2, false)
+  const wavePath = createOpenCubicSpline(pointsPositions, 2)
 
   // Add the corners to the path
   const path = `${wavePath}

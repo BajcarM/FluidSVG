@@ -1,0 +1,303 @@
+import { LitElement, SVGTemplateResult, css, html, svg } from 'lit'
+import { customElement, property, queryAll } from 'lit/decorators.js'
+import { defaultOptions } from './defaultOptions'
+import { NoiseFunction3D, createNoise3D } from 'simplex-noise'
+import {
+  createStaticWaveShape,
+  getHeights,
+  updateWaveShape,
+} from '../../functions/waves/waveFunctions'
+import { WaveShape } from '../..'
+import { WaveOptions } from './Waves.types'
+
+@customElement('waves-component')
+export class Waves extends LitElement {
+  // Properties from attributes
+  @property({ type: Number })
+  speed = defaultOptions.speed
+
+  @property({ type: Number, attribute: 'height-from' })
+  heightFrom = defaultOptions.heightFrom
+
+  @property({ type: Number, attribute: 'height-to' })
+  heightTo = defaultOptions.heightTo
+
+  @property({ type: Number })
+  smoothness = defaultOptions.smoothness
+
+  @property({ type: Number })
+  amplitude = defaultOptions.amplitude
+
+  @property({ type: Number, attribute: 'difference-between-waves' })
+  differenceBetweenWaves = defaultOptions.differenceBetweenWaves
+
+  @property({
+    type: Array,
+    hasChanged: (newValue: WaveOptions[], oldValue: WaveOptions[]) =>
+      JSON.stringify(newValue) !== JSON.stringify(oldValue),
+  })
+  waves = defaultOptions.waves
+
+  // Other properties
+  #shouldPlay = true
+
+  #intersectionObserver: IntersectionObserver | null = null
+
+  #numberOfPoints = 10
+
+  #noise3dFunction!: NoiseFunction3D
+
+  #noiseTimeline = 0
+
+  #animationFrameId: number | null = null
+
+  #lastTimestamp: number | null = null
+
+  @queryAll('path')
+  protected pathElements!: SVGPathElement[]
+
+  #waveShapes: WaveShape[] = []
+
+  // Styles
+
+  static styles = css`
+    :host {
+      display: block;
+    }
+  `
+
+  //Lifecycle
+
+  disconnectedCallback() {
+    super.disconnectedCallback()
+
+    this.#pauseAnimation()
+
+    this.#intersectionObserver?.disconnect()
+  }
+
+  firstUpdated() {
+    this.#initializeWaves()
+
+    this.#initializeIntersectionObserver()
+  }
+
+  // Methods
+  #initializeIntersectionObserver() {
+    this.#intersectionObserver = new IntersectionObserver(
+      ([{ isIntersecting }]) => {
+        if (isIntersecting && this.#shouldPlay) {
+          this.#startAnimation()
+        } else {
+          this.#pauseAnimation()
+        }
+      },
+    )
+
+    this.#intersectionObserver.observe(this)
+  }
+
+  #initializeWaves() {
+    const heights = getHeights(
+      this.heightFrom,
+      this.heightTo,
+      this.waves.length,
+    )
+
+    this.#noise3dFunction = createNoise3D()
+
+    this.#waveShapes = heights.map((height, index) =>
+      createStaticWaveShape(
+        height,
+        this.#numberOfPoints,
+        this.amplitude,
+        this.smoothness,
+        this.differenceBetweenWaves * index,
+        this.#noiseTimeline,
+        this.#noise3dFunction,
+      ),
+    )
+
+    this.pathElements?.forEach((pathElement, index) => {
+      pathElement.setAttribute('d', this.#waveShapes[index].path)
+    })
+  }
+
+  #animate = (timestamp: DOMHighResTimeStamp) => {
+    if (!this.pathElements) {
+      return
+    }
+
+    if (!this.#lastTimestamp) {
+      this.#lastTimestamp = timestamp
+    }
+
+    const timeElapsed = timestamp - this.#lastTimestamp
+    const timeOptimized = timeElapsed < 17 ? timeElapsed : 17
+
+    const speedFormatted = this.speed / 10000
+
+    this.#noiseTimeline += timeOptimized * speedFormatted
+
+    this.#waveShapes.forEach((waveShape, index) => {
+      const { path } = updateWaveShape(
+        waveShape,
+        this.amplitude,
+        this.smoothness,
+        this.#noiseTimeline,
+        this.#noise3dFunction,
+      )
+
+      this.pathElements[index].setAttribute('d', path)
+    })
+
+    this.#animationFrameId = requestAnimationFrame(this.#animate)
+  }
+
+  #startAnimation() {
+    if (this.#animationFrameId) {
+      return
+    }
+
+    this.#animationFrameId = requestAnimationFrame(this.#animate)
+  }
+
+  #pauseAnimation() {
+    if (!this.#animationFrameId) {
+      return
+    }
+
+    cancelAnimationFrame(this.#animationFrameId)
+    this.#animationFrameId = null
+  }
+
+  #getWaveCSSVariables() {
+    const wavesCSSVariables = this.waves.map(
+      ({ stroke, fill, linearGradient }, index) =>
+        html`<style>
+          path:nth-of-type(${index + 1}) {
+            fill: ${linearGradient
+              ? `url(#gradient-${index + 1})`
+              : `var(--wave-${index}-fill-color, ${fill?.color})`};
+            fill-opacity: var(
+              --wave-${index + 1}-fill-opacity,
+              ${fill?.opacity}
+            );
+
+            stroke: var(--wave-${index + 1}-stroke-color, ${stroke?.color});
+            stroke-width: var(
+              --wave-${index + 1}-stroke-width,
+              ${stroke?.width}
+            );
+            stroke-opacity: var(
+              --wave-${index + 1}-stroke-opacity,
+              ${stroke?.opacity}
+            );
+
+            stroke-dasharray: var(
+              --wave-${index + 1}-stroke-dasharray,
+              ${stroke?.dashArray}
+            );
+            stroke-dashoffset: var(
+              --wave-${index + 1}-stroke-dashoffset,
+              ${stroke?.dashOffset}
+            );
+            stroke-linecap: var(
+              --wave-${index + 1}-stroke-linecap,
+              ${stroke?.linecap}
+            );
+
+            filter: url(#shadow-${index + 1});
+          }
+        </style>`,
+    )
+    return wavesCSSVariables
+  }
+
+  #getLinearGradients() {
+    const linearGradients = this.waves.reduce<SVGTemplateResult[]>(
+      (acc, { linearGradient }, index) => {
+        if (!linearGradient) {
+          return acc
+        }
+
+        const { direction, colors } = linearGradient
+
+        const gradientTemplate = svg`
+          <linearGradient
+            id="gradient-${index + 1}"
+            x1=${direction === 'toLeft' ? '1' : '0'}
+            y1=${direction === 'toTop' ? '1' : '0'}
+            x2=${direction === 'toRight' ? '1' : '0'}
+            y2=${direction === 'toBottom' ? '1' : '0'}
+          >
+            ${colors.map(
+              ({ color, offset, opacity }) =>
+                svg`
+                  <stop
+                    offset=${offset}
+                    stop-color=${color}
+                    stop-opacity=${opacity}
+              />`,
+            )}
+          </linearGradient>`
+
+        return [...acc, gradientTemplate]
+      },
+      [],
+    )
+
+    return linearGradients
+  }
+
+  #getShadows() {
+    const shadows = this.waves.reduce<SVGTemplateResult[]>(
+      (acc, { shadow }, index) => {
+        if (!shadow) {
+          return acc
+        }
+
+        const { dx, dy, stdDeviation, floodColor, floodOpacity } = shadow
+
+        const shadowTemplate = svg`
+          <filter id="shadow-${index + 1}">
+            <feDropShadow
+              dx=${dx}
+              dy=${dy}
+              stdDeviation=${stdDeviation}
+              flood-color=${floodColor}
+              flood-opacity=${floodOpacity} />
+          </filter>`
+
+        return [...acc, shadowTemplate]
+      },
+      [],
+    )
+
+    return shadows
+  }
+
+  // Render
+  render() {
+    return html`<svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 1 1"
+      preserveAspectRatio="none"
+      height="100%"
+      width="100%"
+    >
+      ${this.#getWaveCSSVariables()}
+
+      <defs>${this.#getLinearGradients()}</defs>
+      <defs>${this.#getShadows()}</defs>
+
+      ${this.waves.map((_, index) => svg`<path id="wave-${index + 1}"/>`)}
+    </svg>`
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'waves-component': Waves
+  }
+}
