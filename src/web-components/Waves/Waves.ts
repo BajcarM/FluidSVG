@@ -1,5 +1,5 @@
 import { LitElement, SVGTemplateResult, css, html, svg } from 'lit'
-import { customElement, property, queryAll } from 'lit/decorators.js'
+import { property, queryAll } from 'lit/decorators.js'
 import { defaultOptions } from './defaultOptions'
 import { NoiseFunction3D, createNoise3D } from 'simplex-noise'
 import {
@@ -10,7 +10,6 @@ import {
 import { WaveShape } from '../..'
 import { WaveOptions } from './Waves.types'
 
-@customElement('waves-component')
 export class Waves extends LitElement {
   // Properties from attributes
   @property({ type: Number })
@@ -63,6 +62,12 @@ export class Waves extends LitElement {
   static styles = css`
     :host {
       display: block;
+    }
+
+    svg {
+      display: block;
+      height: 100%;
+      width: 100%;
     }
   `
 
@@ -283,8 +288,6 @@ export class Waves extends LitElement {
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 1 1"
       preserveAspectRatio="none"
-      height="100%"
-      width="100%"
     >
       ${this.#getWaveCSSVariables()}
 
@@ -294,6 +297,11 @@ export class Waves extends LitElement {
       ${this.waves.map((_, index) => svg`<path id="wave-${index + 1}"/>`)}
     </svg>`
   }
+}
+
+// Custom register with condition bcause of SSR
+if (typeof window !== 'undefined') {
+  customElements.define('waves-component', Waves)
 }
 
 declare global {
