@@ -22,13 +22,13 @@ export class Waves extends LitElement {
   heightTo = defaultOptions.heightTo
 
   @property({ type: Number })
-  smoothness = defaultOptions.smoothness
+  complexity = defaultOptions.complexity
 
   @property({ type: Number })
   amplitude = defaultOptions.amplitude
 
-  @property({ type: Number, attribute: 'difference-between-waves' })
-  differenceBetweenWaves = defaultOptions.differenceBetweenWaves
+  @property({ type: Number })
+  synchronicity = defaultOptions.synchronicity
 
   @property({
     type: Array,
@@ -116,8 +116,8 @@ export class Waves extends LitElement {
         height,
         this.#numberOfPoints,
         this.amplitude,
-        this.smoothness,
-        this.differenceBetweenWaves * index,
+        this.complexity,
+        this.synchronicity * index,
         this.#noiseTimeline,
         this.#noise3dFunction,
       ),
@@ -148,7 +148,7 @@ export class Waves extends LitElement {
       const { path } = updateWaveShape(
         waveShape,
         this.amplitude,
-        this.smoothness,
+        this.complexity,
         this.#noiseTimeline,
         this.#noise3dFunction,
       )
@@ -300,9 +300,7 @@ export class Waves extends LitElement {
 }
 
 // Custom register with condition bcause of SSR
-if (typeof window !== 'undefined') {
-  customElements.define('waves-component', Waves)
-}
+window && customElements.define('waves-component', Waves)
 
 declare global {
   interface HTMLElementTagNameMap {

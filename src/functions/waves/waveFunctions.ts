@@ -35,21 +35,21 @@ export function createStaticWaveShape(
   waveHeight: number,
   numPoints: number,
   amplitude: number,
-  smoothness: number,
-  differenceBetweenWaves: number,
+  complexity: number,
+  synchronicity: number,
   noiseTimeline: number,
   noise3DFunction: NoiseFunction3D,
 ): WaveShape {
   // Format options for better user experience
   const amplitudeFormatted = amplitude / 10
-  const differenceBetweenWavesFormatted = differenceBetweenWaves / 10
+  const synchronicityFormatted = synchronicity / 10
 
   const { start, end, corner1, corner2 } = getCorners(waveHeight)
 
   const pointsOrigins = generatePointsOnLine(start, end, numPoints)
   const pointsNoiseCoords = getNoiseCoords(
     pointsOrigins,
-    differenceBetweenWavesFormatted,
+    synchronicityFormatted,
   )
 
   const pointsPositions = pointsOrigins.map((point, index) => {
@@ -57,8 +57,8 @@ export function createStaticWaveShape(
     const noiseCoords = pointsNoiseCoords[index]
 
     const noiseValue = noise3DFunction(
-      noiseCoords[0] * smoothness,
-      noiseCoords[1] * smoothness,
+      noiseCoords[0] * complexity,
+      noiseCoords[1] * complexity,
       noiseTimeline,
     )
 
@@ -157,7 +157,7 @@ export function getPointPosition(
 export function updateWaveShape(
   waveShape: WaveShape,
   amplitude: number,
-  smoothness: number,
+  complexity: number,
   noiseTimeline: number,
   noise3DFunction: NoiseFunction3D,
 ): WaveShape {
@@ -173,8 +173,8 @@ export function updateWaveShape(
     const noiseCoords = pointsNoiseCoords[index]
 
     const noiseValue = noise3DFunction(
-      noiseCoords[0] * smoothness,
-      noiseCoords[1] * smoothness,
+      noiseCoords[0] * complexity,
+      noiseCoords[1] * complexity,
       noiseTimeline,
     )
 

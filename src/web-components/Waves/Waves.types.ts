@@ -2,9 +2,9 @@ export type WavesComponentOptions = {
   heightFrom: number
   heightTo: number
   speed: number
-  smoothness: number
+  complexity: number
   amplitude: number
-  differenceBetweenWaves: number
+  synchronicity: number
   waves: WaveOptions[]
 }
 
