@@ -300,8 +300,12 @@ export class Waves extends LitElement {
 }
 
 // Custom register with condition bcause of SSR
-if (typeof window !== 'undefined') {
+export function registerWavesComponent() {
   customElements.define('waves-component', Waves)
+}
+
+if (typeof window !== 'undefined') {
+  registerWavesComponent()
 }
 
 declare global {
