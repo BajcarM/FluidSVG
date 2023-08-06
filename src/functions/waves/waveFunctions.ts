@@ -1,6 +1,6 @@
-import { NoiseFunction3D } from 'simplex-noise'
 import { Vector2D, WaveShape } from '../types'
 import { createOpenCubicSpline } from '../utils/createCubicSpline'
+import { NoiseFunction3D } from '../utils/simplexNoise'
 
 export function generatePointsOnLine(
   start: Vector2D,

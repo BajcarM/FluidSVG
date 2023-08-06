@@ -1,7 +1,6 @@
 import { LitElement, SVGTemplateResult, css, html, svg } from 'lit'
 import { property, queryAll } from 'lit/decorators.js'
 import { defaultOptions } from './defaultOptions'
-import { NoiseFunction3D, createNoise3D } from 'simplex-noise'
 import {
   createStaticWaveShape,
   getHeights,
@@ -9,6 +8,10 @@ import {
 } from '../../functions/waves/waveFunctions'
 import { WaveShape } from '../..'
 import { WaveOptions } from './Waves.types'
+import {
+  NoiseFunction3D,
+  createNoise3D,
+} from '../../functions/utils/simplexNoise'
 
 export class Waves extends LitElement {
   // Properties from attributes
@@ -282,8 +285,15 @@ export class Waves extends LitElement {
     return shadows
   }
 
-  // Render
-  render() {
+  #getWavePaths() {
+    const wavePaths = this.waves.map(
+      (_, index) => svg`<path id="wave-${index + 1}"/>`,
+    )
+
+    return wavePaths
+  }
+
+  #getSVGTemplate() {
     return html`<svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 1 1"
@@ -294,22 +304,30 @@ export class Waves extends LitElement {
       <defs>${this.#getLinearGradients()}</defs>
       <defs>${this.#getShadows()}</defs>
 
-      ${this.waves.map((_, index) => svg`<path id="wave-${index + 1}"/>`)}
+      ${this.#getWavePaths()}
     </svg>`
+  }
+
+  // Render
+  render() {
+    return this.#getSVGTemplate()
   }
 }
 
+const TAG_NAME = 'waves-component' as const
+
 // Custom register with condition bcause of SSR
 export function registerWavesComponent() {
-  customElements.define('waves-component', Waves)
+  customElements.get(TAG_NAME) || customElements.define(TAG_NAME, Waves)
 }
 
 if (typeof window !== 'undefined') {
   registerWavesComponent()
 }
 
+// Declare the custom element in HTMLElementTagNameMap
 declare global {
   interface HTMLElementTagNameMap {
-    'waves-component': Waves
+    [TAG_NAME]: Waves
   }
 }
