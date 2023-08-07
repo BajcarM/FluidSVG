@@ -151,6 +151,10 @@ export class Waves extends LitElement {
   }
 
   #updateWaveShapes() {
+    if (this.#waveShapes.length === 0) {
+      return
+    }
+
     // If animation is running, cancel it but leave the ID
     if (this.#animationFrameId) {
       cancelAnimationFrame(this.#animationFrameId)
