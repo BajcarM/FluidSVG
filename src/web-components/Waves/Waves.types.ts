@@ -1,6 +1,7 @@
 export type WavesComponentOptions = {
-  heightFrom: number
-  heightTo: number
+  background: string
+  distributionFrom: number
+  distributionTo: number
   speed: number
   complexity: number
   amplitude: number

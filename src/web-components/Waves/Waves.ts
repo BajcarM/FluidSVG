@@ -1,4 +1,11 @@
-import { LitElement, SVGTemplateResult, css, html, svg } from 'lit'
+import {
+  LitElement,
+  PropertyValues,
+  SVGTemplateResult,
+  css,
+  html,
+  svg,
+} from 'lit'
 import { property, queryAll } from 'lit/decorators.js'
 import { defaultOptions } from './defaultOptions'
 import {
@@ -15,14 +22,17 @@ import {
 
 export class Waves extends LitElement {
   // Properties from attributes
+  @property({ type: String })
+  background = defaultOptions.background
+
   @property({ type: Number })
   speed = defaultOptions.speed
 
-  @property({ type: Number, attribute: 'height-from' })
-  heightFrom = defaultOptions.heightFrom
+  @property({ type: Number, attribute: 'distribution-from' })
+  distributionFrom = defaultOptions.distributionFrom
 
-  @property({ type: Number, attribute: 'height-to' })
-  heightTo = defaultOptions.heightTo
+  @property({ type: Number, attribute: 'distribution-to' })
+  distributionTo = defaultOptions.distributionTo
 
   @property({ type: Number })
   complexity = defaultOptions.complexity
@@ -45,7 +55,7 @@ export class Waves extends LitElement {
 
   #intersectionObserver: IntersectionObserver | null = null
 
-  #numberOfPoints = 10
+  #numberOfPoints = 20
 
   #noise3dFunction!: NoiseFunction3D
 
@@ -75,6 +85,21 @@ export class Waves extends LitElement {
   `
 
   //Lifecycle
+  protected firstUpdated() {
+    this.#initializeWaves()
+
+    this.#initializeIntersectionObserver()
+  }
+
+  protected willUpdate(changedProperties: PropertyValues<this>) {
+    if (
+      changedProperties.has('distributionFrom') ||
+      changedProperties.has('distributionTo') ||
+      changedProperties.has('synchronicity')
+    ) {
+      this.#updateWaveShapes()
+    }
+  }
 
   disconnectedCallback() {
     super.disconnectedCallback()
@@ -82,12 +107,6 @@ export class Waves extends LitElement {
     this.#pauseAnimation()
 
     this.#intersectionObserver?.disconnect()
-  }
-
-  firstUpdated() {
-    this.#initializeWaves()
-
-    this.#initializeIntersectionObserver()
   }
 
   // Methods
@@ -107,8 +126,8 @@ export class Waves extends LitElement {
 
   #initializeWaves() {
     const heights = getHeights(
-      this.heightFrom,
-      this.heightTo,
+      this.distributionFrom,
+      this.distributionTo,
       this.waves.length,
     )
 
@@ -129,6 +148,36 @@ export class Waves extends LitElement {
     this.pathElements?.forEach((pathElement, index) => {
       pathElement.setAttribute('d', this.#waveShapes[index].path)
     })
+  }
+
+  #updateWaveShapes() {
+    // If animation is running, cancel it but leave the ID
+    if (this.#animationFrameId) {
+      cancelAnimationFrame(this.#animationFrameId)
+    }
+
+    const heights = getHeights(
+      this.distributionFrom,
+      this.distributionTo,
+      this.waves.length,
+    )
+
+    this.#waveShapes = heights.map((height, index) =>
+      createStaticWaveShape(
+        height,
+        this.#numberOfPoints,
+        this.amplitude,
+        this.complexity,
+        this.synchronicity * index,
+        this.#noiseTimeline,
+        this.#noise3dFunction,
+      ),
+    )
+
+    // If animation was running, restart it
+    if (this.#animationFrameId) {
+      this.#animationFrameId = requestAnimationFrame(this.#animate)
+    }
   }
 
   #animate = (timestamp: DOMHighResTimeStamp) => {
@@ -186,7 +235,7 @@ export class Waves extends LitElement {
           path:nth-of-type(${index + 1}) {
             fill: ${linearGradient
               ? `url(#gradient-${index + 1})`
-              : `var(--wave-${index}-fill-color, ${fill?.color})`};
+              : `var(--wave-${index + 1}-fill-color, ${fill?.color})`};
             fill-opacity: var(
               --wave-${index + 1}-fill-opacity,
               ${fill?.opacity}
@@ -299,6 +348,11 @@ export class Waves extends LitElement {
       viewBox="0 0 1 1"
       preserveAspectRatio="none"
     >
+      <style>
+        svg {
+          background: var(--wave-container-background, ${this.background});
+        }
+      </style>
       ${this.#getWaveCSSVariables()}
 
       <defs>${this.#getLinearGradients()}</defs>
