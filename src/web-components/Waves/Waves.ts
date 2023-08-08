@@ -23,7 +23,11 @@ import {
 
 export class Waves extends LitElement {
   // Properties from attributes
-  @property({ type: String })
+  @property({
+    type: Object,
+    hasChanged: (newValue: {}, oldValue: {}) =>
+      JSON.stringify(newValue) !== JSON.stringify(oldValue),
+  })
   background = defaultOptions.background
 
   @property({ type: Number })
@@ -237,15 +241,40 @@ export class Waves extends LitElement {
     const CSSVariables: TemplateResult<1>[] = []
 
     // SVG variables
-    CSSVariables.push(
-      html`
-        <style>
-          svg {
-            background: var(--wave-container-background, ${this.background});
-          }
-        </style>
-      `,
-    )
+
+    if (this.background.linearGradient) {
+      const { direction, colors } = this.background.linearGradient
+
+      const directionFormatted = direction
+        .toLocaleLowerCase()
+        .replace('to', 'to ')
+      const colorsFormatted = colors.map(({ color, offset }) =>
+        offset ? `${color} ${offset}%` : color,
+      )
+
+      CSSVariables.push(
+        html`
+          <style>
+            svg {
+              background: linear-gradient(
+                ${directionFormatted},
+                ${colorsFormatted.join(', ')}
+              );
+            }
+          </style>
+        `,
+      )
+    } else {
+      CSSVariables.push(
+        html`
+          <style>
+            svg {
+              background: var(--wave-container-background, ${this.background});
+            }
+          </style>
+        `,
+      )
+    }
 
     // Wave variables
     this.waves.forEach(({ stroke, fill, linearGradient }, index) =>

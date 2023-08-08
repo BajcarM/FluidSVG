@@ -1,5 +1,8 @@
 export type WavesComponentOptions = {
-  background: string
+  background: {
+    fill?: FillOptions
+    linearGradient?: LinearGradientOptions
+  }
   distribution: [number, number]
   speed: number
   complexity: number

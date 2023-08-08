@@ -1,7 +1,11 @@
 import { WavesComponentOptions } from './Waves.types'
 
 export const defaultOptions: WavesComponentOptions = {
-  background: 'transparent',
+  background: {
+    fill: {
+      color: 'transparent',
+    },
+  },
   speed: 2,
   distribution: [2, 8],
   amplitude: 1, // Movement radius

@@ -31,20 +31,17 @@ const WAVE_OPTIONS: WaveOptions[] = [
       colors: [
         {
           color: 'red',
-          offset: '0%',
-          opacity: 1,
+          offset: 0,
         },
         {
           color: 'blue',
-          offset: '100%',
-          opacity: 1,
+          offset: 100,
         },
       ],
     },
     stroke: {
       color: 'black',
       width: 0.02,
-      opacity: 1,
       dashArray: '0 0.1',
       linecap: 'round',
     },
