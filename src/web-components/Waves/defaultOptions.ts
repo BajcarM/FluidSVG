@@ -3,7 +3,7 @@ import { WavesComponentOptions } from './Waves.types'
 export const defaultOptions: WavesComponentOptions = {
   background: {
     fill: {
-      color: 'transparent',
+      color: 'white',
     },
   },
   speed: 2,

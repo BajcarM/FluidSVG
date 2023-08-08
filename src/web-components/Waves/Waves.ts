@@ -10,8 +10,10 @@ import {
 import { property, queryAll } from 'lit/decorators.js'
 import { defaultOptions } from './defaultOptions'
 import {
+  WAVE_PADDING,
   createStaticWaveShape,
   getHeights,
+  mapRange,
   updateWaveShape,
 } from '../../functions/waves/waveFunctions'
 import { WaveShape } from '../..'
@@ -269,7 +271,10 @@ export class Waves extends LitElement {
         html`
           <style>
             svg {
-              background: var(--wave-container-background, ${this.background});
+              background: var(
+                --wave-container-background,
+                ${this.background.fill?.color}
+              );
             }
           </style>
         `,
@@ -324,6 +329,19 @@ export class Waves extends LitElement {
 
         const { direction, colors } = linearGradient
 
+        // Waves have padding so need to adjust stops
+        const paddingAsRatio = WAVE_PADDING / (1 + 2 * WAVE_PADDING) / 2
+
+        const firstStop = svg`
+        <stop offset=${paddingAsRatio * 100}% stop-color=${colors[0].color} />
+        `
+
+        const lastStop = svg`
+        <stop offset=${(1 - paddingAsRatio) * 100}% stop-color=${
+          colors[colors.length - 1].color
+        } />
+        `
+
         const gradientTemplate = svg`
           <linearGradient
             id="gradient-${index + 1}"
@@ -332,14 +350,25 @@ export class Waves extends LitElement {
             x2=${direction === 'toRight' ? '1' : '0'}
             y2=${direction === 'toBottom' ? '1' : '0'}
           >
-            ${colors.map(
-              ({ color, offset }) =>
-                svg`
+            ${firstStop}
+
+            ${colors.map(({ color, offset }) => {
+              const offsetFormatted = mapRange(
+                offset,
+                0,
+                100,
+                paddingAsRatio * 100,
+                (1 - paddingAsRatio) * 100,
+              )
+
+              return svg`
                   <stop
-                    offset=${offset}
+                    offset=${offsetFormatted}%
                     stop-color=${color}
-              />`,
-            )}
+              />`
+            })}
+
+            ${lastStop}
           </linearGradient>`
 
         return [...acc, gradientTemplate]

@@ -2,6 +2,19 @@ import { Vector2D, WaveShape } from '../types'
 import { createOpenCubicSpline } from '../utils/createCubicSpline'
 import { NoiseFunction3D } from '../utils/simplexNoise'
 
+export const WAVE_PADDING = 0.1
+
+// For mapping gradients because of wave padding
+export function mapRange(
+  value: number,
+  inMin: number,
+  inMax: number,
+  outMin: number,
+  outMax: number,
+): number {
+  return ((value - inMin) / (inMax - inMin)) * (outMax - outMin) + outMin
+}
+
 export function generatePointsOnLine(
   start: Vector2D,
   end: Vector2D,
@@ -12,8 +25,8 @@ export function generatePointsOnLine(
   const xIncrement = (end[0] - start[0]) / numPoints
 
   if (additionalPointsForSpline) {
-    pointsCoords.push([start[0] - xIncrement * 2, start[1]])
-    pointsCoords.push([start[0] - xIncrement, start[1]])
+    pointsCoords.push([start[0] - WAVE_PADDING * 2, start[1]])
+    pointsCoords.push([start[0] - WAVE_PADDING, start[1]])
   }
 
   for (let i = 0; i < numPoints; i++) {
@@ -24,8 +37,8 @@ export function generatePointsOnLine(
 
   if (additionalPointsForSpline) {
     pointsCoords.push([end[0], end[1]])
-    pointsCoords.push([end[0] + xIncrement, end[1]])
-    pointsCoords.push([end[0] + xIncrement * 2, end[1]])
+    pointsCoords.push([end[0] + WAVE_PADDING, end[1]])
+    pointsCoords.push([end[0] + WAVE_PADDING * 2, end[1]])
   }
 
   return pointsCoords
@@ -93,8 +106,8 @@ export function createStaticWaveShape(
 export function getCorners(waveHeight: number) {
   const start: Vector2D = [0, 1 - waveHeight]
   const end: Vector2D = [1, 1 - waveHeight]
-  const corner1: Vector2D = [1.1, 1.1]
-  const corner2: Vector2D = [-0.1, 1.1]
+  const corner1: Vector2D = [1 + WAVE_PADDING, 1 + WAVE_PADDING]
+  const corner2: Vector2D = [0 - WAVE_PADDING, 1 + WAVE_PADDING]
 
   return { start, end, corner1, corner2 }
 }
