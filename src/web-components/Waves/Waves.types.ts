@@ -1,7 +1,6 @@
 export type WavesComponentOptions = {
   background: string
-  distributionFrom: number
-  distributionTo: number
+  distribution: [number, number]
   speed: number
   complexity: number
   amplitude: number
@@ -19,7 +18,6 @@ export type WaveOptions = {
 export type StrokeOptions = {
   color?: string
   width?: number
-  opacity?: number
   dashArray?: string
   dashOffset?: string
   linecap?: 'butt' | 'round' | 'square'
@@ -27,15 +25,13 @@ export type StrokeOptions = {
 
 export type FillOptions = {
   color?: string
-  opacity?: number
 }
 
 export type LinearGradientOptions = {
   direction: 'toTop' | 'toRight' | 'toBottom' | 'toLeft'
   colors: {
     color: string
-    offset: string
-    opacity?: number
+    offset: number
   }[]
 }
 

@@ -2,6 +2,7 @@ import {
   LitElement,
   PropertyValues,
   SVGTemplateResult,
+  TemplateResult,
   css,
   html,
   svg,
@@ -28,11 +29,12 @@ export class Waves extends LitElement {
   @property({ type: Number })
   speed = defaultOptions.speed
 
-  @property({ type: Number, attribute: 'distribution-from' })
-  distributionFrom = defaultOptions.distributionFrom
-
-  @property({ type: Number, attribute: 'distribution-to' })
-  distributionTo = defaultOptions.distributionTo
+  @property({
+    type: Array,
+    hasChanged: (newValue: WaveOptions[], oldValue: WaveOptions[]) =>
+      JSON.stringify(newValue) !== JSON.stringify(oldValue),
+  })
+  distribution = defaultOptions.distribution
 
   @property({ type: Number })
   complexity = defaultOptions.complexity
@@ -93,8 +95,7 @@ export class Waves extends LitElement {
 
   protected willUpdate(changedProperties: PropertyValues<this>) {
     if (
-      changedProperties.has('distributionFrom') ||
-      changedProperties.has('distributionTo') ||
+      changedProperties.has('distribution') ||
       changedProperties.has('synchronicity')
     ) {
       this.#updateWaveShapes()
@@ -126,8 +127,8 @@ export class Waves extends LitElement {
 
   #initializeWaves() {
     const heights = getHeights(
-      this.distributionFrom,
-      this.distributionTo,
+      this.distribution[0],
+      this.distribution[1],
       this.waves.length,
     )
 
@@ -161,8 +162,8 @@ export class Waves extends LitElement {
     }
 
     const heights = getHeights(
-      this.distributionFrom,
-      this.distributionTo,
+      this.distribution[0],
+      this.distribution[1],
       this.waves.length,
     )
 
@@ -232,47 +233,57 @@ export class Waves extends LitElement {
     this.#animationFrameId = null
   }
 
-  #getWaveCSSVariables() {
-    const wavesCSSVariables = this.waves.map(
-      ({ stroke, fill, linearGradient }, index) =>
-        html`<style>
-          path:nth-of-type(${index + 1}) {
-            fill: ${linearGradient
-              ? `url(#gradient-${index + 1})`
-              : `var(--wave-${index + 1}-fill-color, ${fill?.color})`};
-            fill-opacity: var(
-              --wave-${index + 1}-fill-opacity,
-              ${fill?.opacity}
-            );
+  #getCSSVariables() {
+    const CSSVariables: TemplateResult<1>[] = []
 
-            stroke: var(--wave-${index + 1}-stroke-color, ${stroke?.color});
-            stroke-width: var(
-              --wave-${index + 1}-stroke-width,
-              ${stroke?.width}
-            );
-            stroke-opacity: var(
-              --wave-${index + 1}-stroke-opacity,
-              ${stroke?.opacity}
-            );
-
-            stroke-dasharray: var(
-              --wave-${index + 1}-stroke-dasharray,
-              ${stroke?.dashArray}
-            );
-            stroke-dashoffset: var(
-              --wave-${index + 1}-stroke-dashoffset,
-              ${stroke?.dashOffset}
-            );
-            stroke-linecap: var(
-              --wave-${index + 1}-stroke-linecap,
-              ${stroke?.linecap}
-            );
-
-            filter: url(#shadow-${index + 1});
+    // SVG variables
+    CSSVariables.push(
+      html`
+        <style>
+          svg {
+            background: var(--wave-container-background, ${this.background});
           }
-        </style>`,
+        </style>
+      `,
     )
-    return wavesCSSVariables
+
+    // Wave variables
+    this.waves.forEach(({ stroke, fill, linearGradient }, index) =>
+      CSSVariables.push(
+        html`
+          <style>
+            path:nth-of-type(${index + 1}) {
+              fill: ${linearGradient
+                ? `url(#gradient-${index + 1})`
+                : `var(--wave-${index + 1}-fill-color, ${fill?.color})`};
+
+              stroke: var(--wave-${index + 1}-stroke-color, ${stroke?.color});
+              stroke-width: var(
+                --wave-${index + 1}-stroke-width,
+                ${stroke?.width}
+              );
+
+              stroke-dasharray: var(
+                --wave-${index + 1}-stroke-dasharray,
+                ${stroke?.dashArray}
+              );
+              stroke-dashoffset: var(
+                --wave-${index + 1}-stroke-dashoffset,
+                ${stroke?.dashOffset}
+              );
+              stroke-linecap: var(
+                --wave-${index + 1}-stroke-linecap,
+                ${stroke?.linecap}
+              );
+
+              filter: url(#shadow-${index + 1});
+            }
+          </style>
+        `,
+      ),
+    )
+
+    return CSSVariables
   }
 
   #getLinearGradients() {
@@ -293,12 +304,11 @@ export class Waves extends LitElement {
             y2=${direction === 'toBottom' ? '1' : '0'}
           >
             ${colors.map(
-              ({ color, offset, opacity }) =>
+              ({ color, offset }) =>
                 svg`
                   <stop
                     offset=${offset}
                     stop-color=${color}
-                    stop-opacity=${opacity}
               />`,
             )}
           </linearGradient>`
@@ -347,23 +357,20 @@ export class Waves extends LitElement {
   }
 
   #getSVGTemplate() {
-    return html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 1 1"
-      preserveAspectRatio="none"
-    >
-      <style>
-        svg {
-          background: var(--wave-container-background, ${this.background});
-        }
-      </style>
-      ${this.#getWaveCSSVariables()}
+    return html`
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 1 1"
+        preserveAspectRatio="none"
+      >
+        ${this.#getCSSVariables()}
 
-      <defs>${this.#getLinearGradients()}</defs>
-      <defs>${this.#getShadows()}</defs>
+        <defs>${this.#getLinearGradients()}</defs>
+        <defs>${this.#getShadows()}</defs>
 
-      ${this.#getWavePaths()}
-    </svg>`
+        ${this.#getWavePaths()}
+      </svg>
+    `
   }
 
   // Render
