@@ -34,8 +34,12 @@ const WAVE_OPTIONS: WaveOptions[] = [
           offset: 0,
         },
         {
+          color: 'green',
+          offset: 0.4,
+        },
+        {
           color: 'blue',
-          offset: 100,
+          offset: 1,
         },
       ],
     },
@@ -54,6 +58,25 @@ export const Template: StoryObj = {
       style="height: 1000px; width: 1000px; display: block; border: 1px solid black;
 
       margin-inline: auto;"
+      background=${JSON.stringify({
+        linearGradient: {
+          direction: 'toRight',
+          colors: [
+            {
+              color: 'red',
+              offset: 0,
+            },
+            {
+              color: 'blue',
+              offset: 0.4,
+            },
+            {
+              color: 'green',
+              offset: 1,
+            },
+          ],
+        },
+      })}
       waves=${JSON.stringify(WAVE_OPTIONS)}
     ></waves-component>`,
 }

@@ -243,15 +243,12 @@ export class Waves extends LitElement {
     const CSSVariables: TemplateResult<1>[] = []
 
     // SVG variables
-
     if (this.background.linearGradient) {
       const { direction, colors } = this.background.linearGradient
 
-      const directionFormatted = direction
-        .toLocaleLowerCase()
-        .replace('to', 'to ')
+      const directionFormatted = direction.toLowerCase().replace('to', 'to ')
       const colorsFormatted = colors.map(({ color, offset }) =>
-        offset ? `${color} ${offset}%` : color,
+        offset ? `${color} ${offset * 100}%` : color,
       )
 
       CSSVariables.push(
@@ -333,11 +330,13 @@ export class Waves extends LitElement {
         const paddingAsRatio = WAVE_PADDING / (1 + 2 * WAVE_PADDING) / 2
 
         const firstStop = svg`
-        <stop offset=${paddingAsRatio * 100}% stop-color=${colors[0].color} />
+        <stop offset=${Math.floor(paddingAsRatio * 100)}% stop-color=${
+          colors[0].color
+        } />
         `
 
         const lastStop = svg`
-        <stop offset=${(1 - paddingAsRatio) * 100}% stop-color=${
+        <stop offset=${Math.ceil((1 - paddingAsRatio) * 100)}% stop-color=${
           colors[colors.length - 1].color
         } />
         `
@@ -356,14 +355,14 @@ export class Waves extends LitElement {
               const offsetFormatted = mapRange(
                 offset,
                 0,
-                100,
-                paddingAsRatio * 100,
-                (1 - paddingAsRatio) * 100,
+                1,
+                paddingAsRatio,
+                1 - paddingAsRatio,
               )
 
               return svg`
                   <stop
-                    offset=${offsetFormatted}%
+                    offset=${Math.round(offsetFormatted * 100)}%
                     stop-color=${color}
               />`
             })}
