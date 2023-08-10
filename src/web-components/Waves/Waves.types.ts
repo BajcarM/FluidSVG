@@ -22,7 +22,7 @@ export type StrokeOptions = {
   color?: string
   width?: number
   dashArray?: string
-  dashOffset?: string
+  dashOffset?: number
   linecap?: 'butt' | 'round' | 'square'
 }
 
