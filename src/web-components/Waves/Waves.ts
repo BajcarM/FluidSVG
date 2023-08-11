@@ -102,7 +102,8 @@ export class Waves extends LitElement {
   protected willUpdate(changedProperties: PropertyValues<this>) {
     if (
       changedProperties.has('distribution') ||
-      changedProperties.has('synchronicity')
+      changedProperties.has('synchronicity') ||
+      changedProperties.has('waves')
     ) {
       this.#updateWaveShapes()
     }
@@ -216,7 +217,7 @@ export class Waves extends LitElement {
         this.#noise3dFunction,
       )
 
-      this.pathElements[index].setAttribute('d', path)
+      this.pathElements[index]?.setAttribute('d', path)
     })
 
     this.#animationFrameId = requestAnimationFrame(this.#animate)
@@ -385,7 +386,7 @@ export class Waves extends LitElement {
           return acc
         }
 
-        const { dx, dy, stdDeviation, floodColor, floodOpacity } = shadow
+        const { dx, dy, stdDeviation, floodColor } = shadow
 
         const shadowTemplate = svg`
           <filter id="shadow-${index + 1}">
@@ -393,8 +394,7 @@ export class Waves extends LitElement {
               dx=${dx}
               dy=${dy}
               stdDeviation=${stdDeviation}
-              flood-color=${floodColor}
-              flood-opacity=${floodOpacity} />
+              flood-color=${floodColor} />
           </filter>`
 
         return [...acc, shadowTemplate]

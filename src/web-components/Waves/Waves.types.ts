@@ -43,5 +43,4 @@ export type ShadowOptions = {
   dy?: number
   stdDeviation?: number
   floodColor?: string
-  floodOpacity?: number
 }

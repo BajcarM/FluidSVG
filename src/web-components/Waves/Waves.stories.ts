@@ -21,7 +21,6 @@ const WAVE_OPTIONS: WaveOptions[] = [
       dy: 0,
       stdDeviation: 0.01,
       floodColor: 'black',
-      floodOpacity: 0.5,
     },
   },
 
